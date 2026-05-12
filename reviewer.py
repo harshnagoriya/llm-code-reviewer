@@ -20,7 +20,7 @@ def get_diff():
 
 def review_with_gemini(diff):
     genai.configure(api_key=GEMINI_API_KEY, transport="rest")
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     template = open("prompt.txt").read()
     prompt = template.replace("{diff}", diff[:30000])
     return model.generate_content(prompt).text

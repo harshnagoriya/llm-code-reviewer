@@ -31,7 +31,7 @@ def review_with_gemini(diff):
         )
         print(f"Response status: {r.status_code}")
         if r.status_code == 429:
-            wait = 10 * (attempt + 1)
+            wait = 60 * (attempt + 1)
             print(f"Rate limited, retrying in {wait}s...")
             time.sleep(wait)
             continue

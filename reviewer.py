@@ -19,22 +19,25 @@ def get_diff():
     return r.text
 
 def review_with_gemini(diff):
+    import time
     template = open("prompt.txt").read()
     prompt = template.replace("{diff}", diff[:30000])
     for attempt in range(3):
+        print(f"Calling Gemini API (attempt {attempt + 1}/3)...")
         r = requests.post(
             GEMINI_API,
             params={"key": GEMINI_API_KEY},
             json={"contents": [{"parts": [{"text": prompt}]}]}
         )
+        print(f"Response status: {r.status_code}")
         if r.status_code == 429:
-            wait = 30 * (attempt + 1)
+            wait = 10 * (attempt + 1)
             print(f"Rate limited, retrying in {wait}s...")
-            import time; time.sleep(wait)
+            time.sleep(wait)
             continue
         r.raise_for_status()
         return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-    raise Exception("Gemini rate limit exceeded after retries. Try again later.")
+    raise Exception("Gemini rate limit exceeded after retries.")
 
 def post_comment(body):
     url = f"{GITHUB_API}/repos/{REPO}/issues/{PR_NUMBER}/comments"

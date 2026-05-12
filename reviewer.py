@@ -19,15 +19,10 @@ def get_diff():
     return r.text
 
 def review_with_gemini(diff):
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY, transport="rest")
     model = genai.GenerativeModel("gemini-1.5-flash")
-    prompt = f"""You are an expert code reviewer. Review the following git diff and provide concise, actionable feedback.
-Focus on: bugs, security issues, performance problems, and code quality.
-Be direct and specific. Format your response in markdown with clear sections.
-
-```diff
-{diff[:30000]}
-```"""
+    template = open("prompt.txt").read()
+    prompt = template.replace("{diff}", diff[:30000])
     return model.generate_content(prompt).text
 
 def post_comment(body):

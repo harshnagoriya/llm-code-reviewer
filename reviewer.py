@@ -1,6 +1,5 @@
 import os
 import requests
-import google.generativeai as genai
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"].strip()
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
@@ -10,6 +9,7 @@ BASE_SHA = os.environ["BASE_SHA"]
 HEAD_SHA = os.environ["HEAD_SHA"]
 
 GITHUB_API = "https://api.github.com"
+GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
 
 def get_diff():
@@ -19,11 +19,15 @@ def get_diff():
     return r.text
 
 def review_with_gemini(diff):
-    genai.configure(api_key=GEMINI_API_KEY, transport="rest")
-    model = genai.GenerativeModel("gemini-1.5-flash-8b")
     template = open("prompt.txt").read()
     prompt = template.replace("{diff}", diff[:30000])
-    return model.generate_content(prompt).text
+    r = requests.post(
+        GEMINI_API,
+        params={"key": GEMINI_API_KEY},
+        json={"contents": [{"parts": [{"text": prompt}]}]}
+    )
+    r.raise_for_status()
+    return r.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 def post_comment(body):
     url = f"{GITHUB_API}/repos/{REPO}/issues/{PR_NUMBER}/comments"

@@ -23,16 +23,16 @@ def review_with_gemini(diff):
     template = open("prompt.txt").read()
     prompt = template.replace("{diff}", diff[:30000])
     for attempt in range(3):
-        print(f"Calling Gemini API (attempt {attempt + 1}/3)...")
+        print(f"Calling Gemini API (attempt {attempt + 1}/3)...", flush=True)
         r = requests.post(
             GEMINI_API,
             params={"key": GEMINI_API_KEY},
             json={"contents": [{"parts": [{"text": prompt}]}]}
         )
-        print(f"Response status: {r.status_code}")
+        print(f"Response status: {r.status_code}", flush=True)
         if r.status_code == 429:
             wait = 60 * (attempt + 1)
-            print(f"Rate limited, retrying in {wait}s...")
+            print(f"Rate limited, retrying in {wait}s...", flush=True)
             time.sleep(wait)
             continue
         r.raise_for_status()
